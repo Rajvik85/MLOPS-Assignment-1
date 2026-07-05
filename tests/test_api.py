@@ -46,7 +46,38 @@ def test_prediction_form_ui_available(mock_client):
     assert response.status_code == 200
     assert "Heart Disease Risk Prediction" in response.text
     assert "Predict Risk" in response.text
+    assert "Load Random Sample" in response.text
+    assert "Loaded Sample Record" in response.text
+    assert 'id="sampleRecord"' in response.text
+    assert 'fetch("/sample"' in response.text
     assert 'fetch("/predict"' in response.text
+
+
+def test_random_sample_endpoint_returns_patient_payload(mock_client):
+    """
+    Tests that /sample returns a valid patient payload for the browser UI.
+    """
+    response = mock_client.get("/sample")
+
+    assert response.status_code == 200
+    json_data = response.json()
+    expected_fields = {
+        "age",
+        "sex",
+        "cp",
+        "trestbps",
+        "chol",
+        "fbs",
+        "restecg",
+        "thalach",
+        "exang",
+        "oldpeak",
+        "slope",
+        "ca",
+        "thal",
+    }
+    assert set(json_data) == expected_fields
+    assert all(isinstance(value, float) for value in json_data.values())
 
 
 def test_health_endpoint_degraded():

@@ -5,6 +5,7 @@ Exposes /health, /predict (with input validation), and /metrics (Prometheus) end
 
 import os
 import logging
+import random
 from contextlib import asynccontextmanager
 import joblib
 import pandas as pd
@@ -25,6 +26,129 @@ MODEL_PATH = os.path.join(PROJECT_DIR, "models", "best_model.joblib")
 
 # Global reference to the trained model pipeline
 model_pipeline = None
+
+SAMPLE_PATIENTS = [
+    {
+        "age": 63.0,
+        "sex": 1.0,
+        "cp": 1.0,
+        "trestbps": 145.0,
+        "chol": 233.0,
+        "fbs": 1.0,
+        "restecg": 2.0,
+        "thalach": 150.0,
+        "exang": 0.0,
+        "oldpeak": 2.3,
+        "slope": 3.0,
+        "ca": 0.0,
+        "thal": 6.0,
+    },
+    {
+        "age": 67.0,
+        "sex": 1.0,
+        "cp": 4.0,
+        "trestbps": 160.0,
+        "chol": 286.0,
+        "fbs": 0.0,
+        "restecg": 2.0,
+        "thalach": 108.0,
+        "exang": 1.0,
+        "oldpeak": 1.5,
+        "slope": 2.0,
+        "ca": 3.0,
+        "thal": 3.0,
+    },
+    {
+        "age": 41.0,
+        "sex": 0.0,
+        "cp": 2.0,
+        "trestbps": 130.0,
+        "chol": 204.0,
+        "fbs": 0.0,
+        "restecg": 2.0,
+        "thalach": 172.0,
+        "exang": 0.0,
+        "oldpeak": 1.4,
+        "slope": 1.0,
+        "ca": 0.0,
+        "thal": 3.0,
+    },
+    {
+        "age": 60.0,
+        "sex": 1.0,
+        "cp": 4.0,
+        "trestbps": 130.0,
+        "chol": 206.0,
+        "fbs": 0.0,
+        "restecg": 2.0,
+        "thalach": 132.0,
+        "exang": 1.0,
+        "oldpeak": 2.4,
+        "slope": 2.0,
+        "ca": 2.0,
+        "thal": 7.0,
+    },
+    {
+        "age": 50.0,
+        "sex": 0.0,
+        "cp": 3.0,
+        "trestbps": 120.0,
+        "chol": 219.0,
+        "fbs": 0.0,
+        "restecg": 0.0,
+        "thalach": 158.0,
+        "exang": 0.0,
+        "oldpeak": 1.6,
+        "slope": 2.0,
+        "ca": 0.0,
+        "thal": 3.0,
+    },
+    {
+        "age": 65.0,
+        "sex": 0.0,
+        "cp": 4.0,
+        "trestbps": 150.0,
+        "chol": 225.0,
+        "fbs": 0.0,
+        "restecg": 2.0,
+        "thalach": 114.0,
+        "exang": 0.0,
+        "oldpeak": 1.0,
+        "slope": 2.0,
+        "ca": 3.0,
+        "thal": 7.0,
+    },
+    {
+        "age": 44.0,
+        "sex": 1.0,
+        "cp": 2.0,
+        "trestbps": 130.0,
+        "chol": 219.0,
+        "fbs": 0.0,
+        "restecg": 2.0,
+        "thalach": 188.0,
+        "exang": 0.0,
+        "oldpeak": 0.0,
+        "slope": 1.0,
+        "ca": 0.0,
+        "thal": 3.0,
+    },
+    {
+        "age": 62.0,
+        "sex": 0.0,
+        "cp": 4.0,
+        "trestbps": 160.0,
+        "chol": 164.0,
+        "fbs": 0.0,
+        "restecg": 2.0,
+        "thalach": 145.0,
+        "exang": 0.0,
+        "oldpeak": 6.2,
+        "slope": 3.0,
+        "ca": 3.0,
+        "thal": 7.0,
+    },
+]
 
 
 def ensure_model_compatibility(pipeline):
@@ -164,6 +288,14 @@ def health_check():
             "detail": "Model pipeline artifact is missing",
         }
     return {"status": "healthy", "model_loaded": True}
+
+
+@app.get("/sample", response_model=PatientData, tags=["User Interface"])
+def random_sample():
+    """
+    Returns a random sample patient record for the browser prediction form.
+    """
+    return random.choice(SAMPLE_PATIENTS).copy()
 
 
 @app.post("/predict", response_model=PredictionOutput, tags=["Prediction"])
@@ -342,6 +474,17 @@ def prediction_form():
           font-size: 22px;
           margin-bottom: 8px;
         }
+        .sample-panel {
+          grid-column: 1 / -1;
+          border: 1px solid var(--line);
+          background: #fbfdff;
+          padding: 14px;
+          margin-top: 4px;
+        }
+        .sample-panel h3 {
+          margin: 0 0 8px;
+          font-size: 15px;
+        }
         .risk-high { color: var(--danger); }
         .risk-low { color: var(--ok); }
         code {
@@ -430,7 +573,12 @@ def prediction_form():
               </label>
               <div class="actions">
                 <button type="submit">Predict Risk</button>
-                <button type="button" class="secondary" id="resetExample">Load Example</button>
+                <button type="button" class="secondary" id="loadSample">Load Random Sample</button>
+              </div>
+              <div class="sample-panel">
+                <h3>Loaded Sample Record</h3>
+                <p>The current form values below are the payload that will be sent to the API.</p>
+                <code id="sampleRecord">No sample loaded yet.</code>
               </div>
             </form>
           </section>
@@ -445,15 +593,25 @@ def prediction_form():
       </main>
 
       <script>
-        const examplePayload = {
-          age: 63, sex: 1, cp: 3, trestbps: 145, chol: 233, fbs: 1,
-          restecg: 0, thalach: 150, exang: 0, oldpeak: 2.3, slope: 2,
-          ca: 0, thal: 3
-        };
-
-        function loadExample() {
-          for (const [key, value] of Object.entries(examplePayload)) {
+        function populateForm(payload) {
+          for (const [key, value] of Object.entries(payload)) {
             document.querySelector(`[name="${key}"]`).value = value;
+          }
+          document.getElementById("sampleRecord").textContent =
+            JSON.stringify(payload, null, 2);
+        }
+
+        async function loadRandomSample() {
+          const resultBox = document.getElementById("resultBox");
+          try {
+            const response = await fetch("/sample", { cache: "no-store" });
+            const data = await response.json();
+            populateForm(data);
+            resultBox.textContent =
+              "Random sample loaded. Click Predict Risk to score it.";
+          } catch (error) {
+            resultBox.innerHTML =
+              `<strong class="risk-high">Unable to load sample</strong><p>${error}</p>`;
           }
         }
 
@@ -463,6 +621,13 @@ def prediction_form():
             payload[key] = Number(value);
           });
           return payload;
+        }
+
+        function updateSampleRecordFromForm() {
+          const form = document.getElementById("predictionForm");
+          const payload = formToPayload(form);
+          document.getElementById("sampleRecord").textContent =
+            JSON.stringify(payload, null, 2);
         }
 
         async function checkHealth() {
@@ -478,7 +643,11 @@ def prediction_form():
           }
         }
 
-        document.getElementById("resetExample").addEventListener("click", loadExample);
+        document.getElementById("loadSample").addEventListener("click", loadRandomSample);
+        document.getElementById("predictionForm").addEventListener(
+          "input",
+          updateSampleRecordFromForm
+        );
 
         document.getElementById("predictionForm").addEventListener("submit", async (event) => {
           event.preventDefault();
@@ -516,7 +685,7 @@ def prediction_form():
           }
         });
 
-        loadExample();
+        loadRandomSample();
         checkHealth();
       </script>
     </body>

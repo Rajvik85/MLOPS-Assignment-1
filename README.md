@@ -137,7 +137,11 @@ open http://127.0.0.1:8000
 
 The page lets a user enter patient health values and calls the same `/predict`
 API endpoint used by automated systems. It displays the prediction, confidence,
-and model version directly in the browser.
+and model version directly in the browser. The form loads a random realistic
+sample patient record each time the page opens, and the **Load Random Sample**
+button can be used to load another random record before prediction. The loaded
+sample record is displayed on the page as JSON so users can see exactly which
+values are being sent to the model.
 
 You can also inspect the automatically generated API documentation:
 
@@ -202,7 +206,7 @@ python3 -m pytest tests/ --cov=src -v
 To package the API with its dependencies, models, and preprocessors:
 
 ```bash
-docker build -t heart-disease-api:latest -t heart-disease-api:1.0.0 .
+docker build -t heart-disease-api:latest -t heart-disease-api:1.0.1 .
 ```
 
 ### Run Docker Container Locally
