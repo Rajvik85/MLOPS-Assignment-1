@@ -189,7 +189,11 @@ def train_and_evaluate(raw_data_path, model_type="rf", mlflow_tracking_uri=None)
             mlflow.log_artifact(plot_path, artifact_path="plots")
 
         # 7. Log model to MLflow
-        mlflow.sklearn.log_model(best_pipeline, name="model")
+        mlflow.sklearn.log_model(
+            best_pipeline,
+            name="model",
+            serialization_format=mlflow.sklearn.SERIALIZATION_FORMAT_CLOUDPICKLE,
+        )
         logger.info("Model logged to MLflow.")
 
         # Return best pipeline and evaluation metrics
