@@ -128,6 +128,23 @@ Start Uvicorn to run the server:
 uvicorn src.api:app --reload --host 127.0.0.1 --port 8000
 ```
 
+### Use the Browser Prediction UI
+Open the user-facing prediction form in your browser:
+
+```bash
+open http://127.0.0.1:8000
+```
+
+The page lets a user enter patient health values and calls the same `/predict`
+API endpoint used by automated systems. It displays the prediction, confidence,
+and model version directly in the browser.
+
+You can also inspect the automatically generated API documentation:
+
+```bash
+open http://127.0.0.1:8000/docs
+```
+
 ### Validate API Endpoints
 1. **Health Check**:
    ```bash
@@ -185,14 +202,15 @@ python3 -m pytest tests/ --cov=src -v
 To package the API with its dependencies, models, and preprocessors:
 
 ```bash
-docker build -t heart-disease-api:latest .
+docker build -t heart-disease-api:latest -t heart-disease-api:1.0.0 .
 ```
 
 ### Run Docker Container Locally
 ```bash
 docker run -p 8000:8000 heart-disease-api:latest
 ```
-Test the container endpoint using the same `curl` commands.
+Open `http://127.0.0.1:8000` to use the browser UI, or test the container
+endpoint using the same `curl` commands.
 
 ### Kubernetes Deployment
 Deploy the containerized application to your local Kubernetes cluster (Minikube / Docker Desktop):

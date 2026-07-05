@@ -37,6 +37,18 @@ def test_health_endpoint_healthy(mock_client):
     assert response.json() == {"status": "healthy", "model_loaded": True}
 
 
+def test_prediction_form_ui_available(mock_client):
+    """
+    Tests that the browser UI is available for manual predictions.
+    """
+    response = mock_client.get("/")
+
+    assert response.status_code == 200
+    assert "Heart Disease Risk Prediction" in response.text
+    assert "Predict Risk" in response.text
+    assert 'fetch("/predict"' in response.text
+
+
 def test_health_endpoint_degraded():
     """
     Tests that /health returns degraded status if no model is loaded.

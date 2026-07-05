@@ -9,6 +9,7 @@ from contextlib import asynccontextmanager
 import joblib
 import pandas as pd
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, ConfigDict, Field
 from prometheus_fastapi_instrumentator import Instrumentator
 
@@ -207,3 +208,315 @@ def predict(data: PatientData):
 
 # Instrument the FastAPI app to collect and expose Prometheus metrics at /metrics
 Instrumentator().instrument(app).expose(app)
+
+
+@app.get("/", response_class=HTMLResponse, tags=["User Interface"])
+def prediction_form():
+    """
+    Browser-based form for manual heart disease prediction checks.
+    """
+    return """
+    <!doctype html>
+    <html lang="en">
+    <head>
+      <meta charset="utf-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1" />
+      <title>Heart Disease Risk Prediction</title>
+      <style>
+        :root {
+          color-scheme: light;
+          --bg: #f6f8fb;
+          --panel: #ffffff;
+          --text: #1f2937;
+          --muted: #5f6b7a;
+          --line: #d9e1ec;
+          --primary: #0f766e;
+          --primary-dark: #115e59;
+          --danger: #b42318;
+          --ok: #047857;
+        }
+        * { box-sizing: border-box; }
+        body {
+          margin: 0;
+          font-family: Arial, Helvetica, sans-serif;
+          background: var(--bg);
+          color: var(--text);
+        }
+        main {
+          max-width: 1120px;
+          margin: 0 auto;
+          padding: 28px 20px 40px;
+        }
+        header {
+          display: flex;
+          justify-content: space-between;
+          gap: 20px;
+          align-items: flex-start;
+          border-bottom: 1px solid var(--line);
+          padding-bottom: 18px;
+          margin-bottom: 22px;
+        }
+        h1 {
+          margin: 0 0 8px;
+          font-size: 30px;
+          line-height: 1.2;
+        }
+        p {
+          margin: 0;
+          color: var(--muted);
+          line-height: 1.5;
+        }
+        .status {
+          min-width: 180px;
+          background: var(--panel);
+          border: 1px solid var(--line);
+          padding: 12px 14px;
+          font-size: 14px;
+        }
+        .layout {
+          display: grid;
+          grid-template-columns: 1.3fr 0.7fr;
+          gap: 20px;
+        }
+        section {
+          background: var(--panel);
+          border: 1px solid var(--line);
+          padding: 18px;
+        }
+        h2 {
+          margin: 0 0 14px;
+          font-size: 18px;
+        }
+        form {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 14px;
+        }
+        label {
+          display: grid;
+          gap: 6px;
+          font-size: 13px;
+          font-weight: 700;
+        }
+        input {
+          width: 100%;
+          min-height: 40px;
+          border: 1px solid var(--line);
+          padding: 8px 10px;
+          font-size: 15px;
+        }
+        input:focus {
+          border-color: var(--primary);
+          outline: 2px solid rgba(15, 118, 110, 0.16);
+        }
+        .actions {
+          grid-column: 1 / -1;
+          display: flex;
+          gap: 10px;
+          flex-wrap: wrap;
+          margin-top: 4px;
+        }
+        button {
+          border: 0;
+          background: var(--primary);
+          color: white;
+          min-height: 42px;
+          padding: 0 18px;
+          font-size: 15px;
+          font-weight: 700;
+          cursor: pointer;
+        }
+        button.secondary {
+          background: #334155;
+        }
+        button:hover { background: var(--primary-dark); }
+        button.secondary:hover { background: #1f2937; }
+        .result {
+          border: 1px solid var(--line);
+          padding: 16px;
+          min-height: 132px;
+          background: #fbfdff;
+        }
+        .result strong {
+          display: block;
+          font-size: 22px;
+          margin-bottom: 8px;
+        }
+        .risk-high { color: var(--danger); }
+        .risk-low { color: var(--ok); }
+        code {
+          display: block;
+          white-space: pre-wrap;
+          background: #0f172a;
+          color: #e2e8f0;
+          padding: 12px;
+          margin-top: 14px;
+          font-size: 13px;
+          overflow-x: auto;
+        }
+        .field-help {
+          color: var(--muted);
+          font-size: 12px;
+          font-weight: 400;
+        }
+        @media (max-width: 860px) {
+          header, .layout, form {
+            grid-template-columns: 1fr;
+            display: grid;
+          }
+          .status {
+            min-width: 0;
+          }
+        }
+      </style>
+    </head>
+    <body>
+      <main>
+        <header>
+          <div>
+            <h1>Heart Disease Risk Prediction</h1>
+            <p>Enter patient health values and submit them to the deployed model API.</p>
+          </div>
+          <div class="status" id="healthStatus">Checking API health...</div>
+        </header>
+
+        <div class="layout">
+          <section>
+            <h2>Patient Inputs</h2>
+            <form id="predictionForm">
+              <label>Age
+                <input name="age" type="number" step="0.1" value="63" required />
+              </label>
+              <label>Sex
+                <input name="sex" type="number" step="1" value="1" required />
+                <span class="field-help">1 = male, 0 = female</span>
+              </label>
+              <label>Chest Pain Type
+                <input name="cp" type="number" step="1" value="3" required />
+                <span class="field-help">Typical UCI values: 1, 2, 3, 4</span>
+              </label>
+              <label>Resting BP
+                <input name="trestbps" type="number" step="0.1" value="145" required />
+              </label>
+              <label>Cholesterol
+                <input name="chol" type="number" step="0.1" value="233" required />
+              </label>
+              <label>Fasting Blood Sugar
+                <input name="fbs" type="number" step="1" value="1" required />
+                <span class="field-help">1 = true, 0 = false</span>
+              </label>
+              <label>Rest ECG
+                <input name="restecg" type="number" step="1" value="0" required />
+              </label>
+              <label>Max Heart Rate
+                <input name="thalach" type="number" step="0.1" value="150" required />
+              </label>
+              <label>Exercise Angina
+                <input name="exang" type="number" step="1" value="0" required />
+                <span class="field-help">1 = yes, 0 = no</span>
+              </label>
+              <label>Oldpeak
+                <input name="oldpeak" type="number" step="0.1" value="2.3" required />
+              </label>
+              <label>Slope
+                <input name="slope" type="number" step="1" value="2" required />
+              </label>
+              <label>Major Vessels
+                <input name="ca" type="number" step="1" value="0" required />
+              </label>
+              <label>Thal
+                <input name="thal" type="number" step="1" value="3" required />
+                <span class="field-help">3 = normal, 6 = fixed defect, 7 = reversible defect</span>
+              </label>
+              <div class="actions">
+                <button type="submit">Predict Risk</button>
+                <button type="button" class="secondary" id="resetExample">Load Example</button>
+              </div>
+            </form>
+          </section>
+
+          <section>
+            <h2>Prediction Result</h2>
+            <div class="result" id="resultBox">
+              Submit the form to call the live `/predict` API endpoint.
+            </div>
+          </section>
+        </div>
+      </main>
+
+      <script>
+        const examplePayload = {
+          age: 63, sex: 1, cp: 3, trestbps: 145, chol: 233, fbs: 1,
+          restecg: 0, thalach: 150, exang: 0, oldpeak: 2.3, slope: 2,
+          ca: 0, thal: 3
+        };
+
+        function loadExample() {
+          for (const [key, value] of Object.entries(examplePayload)) {
+            document.querySelector(`[name="${key}"]`).value = value;
+          }
+        }
+
+        function formToPayload(form) {
+          const payload = {};
+          new FormData(form).forEach((value, key) => {
+            payload[key] = Number(value);
+          });
+          return payload;
+        }
+
+        async function checkHealth() {
+          const status = document.getElementById("healthStatus");
+          try {
+            const response = await fetch("/health");
+            const data = await response.json();
+            status.textContent = data.model_loaded
+              ? "API healthy. Model loaded."
+              : "API degraded. Model not loaded.";
+          } catch (error) {
+            status.textContent = "API health check failed.";
+          }
+        }
+
+        document.getElementById("resetExample").addEventListener("click", loadExample);
+
+        document.getElementById("predictionForm").addEventListener("submit", async (event) => {
+          event.preventDefault();
+          const resultBox = document.getElementById("resultBox");
+          const payload = formToPayload(event.target);
+          resultBox.textContent = "Calling prediction API...";
+
+          try {
+            const response = await fetch("/predict", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload)
+            });
+            const data = await response.json();
+
+            if (!response.ok) {
+              resultBox.innerHTML = `<strong class="risk-high">Request failed</strong><code>${JSON.stringify(data, null, 2)}</code>`;
+              return;
+            }
+
+            const isHighRisk = data.prediction === 1;
+            const label = isHighRisk ? "Heart disease risk detected" : "No heart disease risk detected";
+            const className = isHighRisk ? "risk-high" : "risk-low";
+            resultBox.innerHTML = `
+              <strong class="${className}">${label}</strong>
+              <p>Prediction class: ${data.prediction}</p>
+              <p>Confidence for disease class: ${(data.confidence * 100).toFixed(2)}%</p>
+              <p>Model version: ${data.model_version}</p>
+              <code>${JSON.stringify(data, null, 2)}</code>
+            `;
+          } catch (error) {
+            resultBox.innerHTML = `<strong class="risk-high">Unable to call API</strong><p>${error}</p>`;
+          }
+        });
+
+        loadExample();
+        checkHealth();
+      </script>
+    </body>
+    </html>
+    """
