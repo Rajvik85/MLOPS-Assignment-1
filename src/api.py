@@ -495,7 +495,9 @@ def prediction_form():
             const data = await response.json();
 
             if (!response.ok) {
-              resultBox.innerHTML = `<strong class="risk-high">Request failed</strong><code>${JSON.stringify(data, null, 2)}</code>`;
+              const errorJson = JSON.stringify(data, null, 2);
+              resultBox.innerHTML =
+                `<strong class="risk-high">Request failed</strong><code>${errorJson}</code>`;
               return;
             }
 
