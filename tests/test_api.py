@@ -107,3 +107,21 @@ def test_predict_invalid_input(mock_client):
 
     assert response.status_code == 422
     assert "detail" in response.json()
+
+
+def test_ensure_model_compatibility_adds_missing_logistic_multi_class():
+    """
+    Tests compatibility repair for models saved by newer scikit-learn versions
+    and loaded by older serving environments.
+    """
+
+    class LogisticRegression:
+        pass
+
+    mock_pipeline = MagicMock()
+    mock_pipeline.named_steps = {"classifier": LogisticRegression()}
+
+    repaired_pipeline = api.ensure_model_compatibility(mock_pipeline)
+
+    assert repaired_pipeline is mock_pipeline
+    assert mock_pipeline.named_steps["classifier"].multi_class == "auto"

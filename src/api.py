@@ -26,6 +26,18 @@ MODEL_PATH = os.path.join(PROJECT_DIR, "models", "best_model.joblib")
 model_pipeline = None
 
 
+def ensure_model_compatibility(pipeline):
+    """
+    Repair known cross-version sklearn model attributes after joblib loading.
+    """
+    classifier = getattr(pipeline, "named_steps", {}).get("classifier")
+    if classifier.__class__.__name__ == "LogisticRegression" and not hasattr(
+        classifier, "multi_class"
+    ):
+        classifier.multi_class = "auto"
+    return pipeline
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """
@@ -40,7 +52,7 @@ async def lifespan(app: FastAPI):
         )
     else:
         try:
-            model_pipeline = joblib.load(MODEL_PATH)
+            model_pipeline = ensure_model_compatibility(joblib.load(MODEL_PATH))
             logger.info("Model pipeline successfully loaded from disk.")
         except Exception as e:
             logger.error(f"Failed to load model pipeline: {str(e)}")
@@ -141,7 +153,7 @@ def health_check():
         if os.path.exists(MODEL_PATH):
             # Try reloading if file now exists
             try:
-                model_pipeline = joblib.load(MODEL_PATH)
+                model_pipeline = ensure_model_compatibility(joblib.load(MODEL_PATH))
                 return {"status": "healthy", "model_loaded": True}
             except Exception:
                 pass
