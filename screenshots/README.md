@@ -1,32 +1,45 @@
-# Screenshot Evidence Checklist
+# Screenshot Evidence Index
 
-Add final screenshots in this folder before submission. The assignment asks for
-proof of CI/CD, deployment, experiment tracking, and monitoring.
+This folder contains the selected and renamed screenshots for report compilation.
+The original raw screenshots remain in `/Users/rajeshnatarajan/Documents/Snapshots`.
 
-Required screenshots:
+## MLflow Evidence
 
-1. `01_mlflow_experiments.png` - MLflow experiment list showing Logistic Regression
-   and Random Forest runs.
-2. `02_mlflow_metrics.png` - MLflow run metrics and artifacts, including ROC curve
-   and confusion matrix.
-3. `03_github_actions_success.png` - GitHub Actions workflow run with lint, tests,
-   training, and Docker build passing.
-4. `04_docker_api_health.png` - Docker container running locally and `/health`
-   returning healthy.
-5. `05_docker_predict_response.png` - `/predict` endpoint returning prediction and
-   confidence from the Docker container.
-6. `06_kubernetes_pods_service.png` - `kubectl get pods` and `kubectl get svc`
-   showing the API deployment and service.
-7. `07_kubernetes_predict_response.png` - `/predict` response through the
-   Kubernetes service or Minikube tunnel URL.
-8. `08_prometheus_metrics.png` - `/metrics` endpoint showing Prometheus metrics.
+| File | Use in report |
+| --- | --- |
+| `mlflow/01_mlflow_experiments_list.png` | Shows the `Heart_Disease_Classification` experiment exists in MLflow. |
+| `mlflow/02_mlflow_logistic_regression_overview.png` | Shows Logistic Regression run metrics, parameters, status, source, and run ID. |
+| `mlflow/03_mlflow_random_forest_overview.png` | Shows Random Forest run metrics, parameters, status, source, and run ID. |
+| `mlflow/04_mlflow_logistic_regression_metrics_charts.png` | Shows Logistic Regression metric charts. |
+| `mlflow/05_mlflow_random_forest_metrics_charts.png` | Shows Random Forest metric charts. |
+| `mlflow/06_mlflow_logistic_confusion_matrix.png` | Shows Logistic Regression confusion matrix artifact. |
+| `mlflow/07_mlflow_logistic_roc_curve.png` | Shows Logistic Regression ROC curve artifact. |
+| `mlflow/08_mlflow_random_forest_confusion_matrix.png` | Shows Random Forest confusion matrix artifact. |
+| `mlflow/09_mlflow_random_forest_roc_curve.png` | Shows Random Forest ROC curve artifact. |
 
-Suggested short video flow:
+## API And Monitoring Evidence
 
-1. Show the GitHub repository structure.
-2. Run `pytest`, `black --check`, and `flake8`.
-3. Show MLflow runs and metrics.
-4. Start the API locally or through Docker.
-5. Send a `/predict` request.
-6. Show Kubernetes pod/service status.
-7. Open `/metrics` to demonstrate monitoring.
+| File | Use in report |
+| --- | --- |
+| `api/01_local_api_health_predict_metrics.png` | Shows local API server, `/health`, `/predict`, and `/metrics` usage. |
+| `api/02_prometheus_metrics_detail.png` | Shows detailed Prometheus metrics output. |
+
+## Docker Evidence
+
+| File | Use in report |
+| --- | --- |
+| `docker/01_container_or_local_predict_response.png` | Shows successful `/predict` response. Use as supporting API evidence if Docker-specific proof is not required separately. |
+
+## Kubernetes Evidence
+
+| File | Use in report |
+| --- | --- |
+| `kubernetes/01_kubernetes_pods_service_health_predict.png` | Main Kubernetes proof: pods running, service exposed, `/health` successful, and `/predict` successful through port-forwarded service. |
+| `kubernetes/02_kubernetes_pods_service_health_predict_backup.png` | Backup Kubernetes proof with the same evidence. |
+
+## Still Needed If Report Requires It
+
+| File | Reason |
+| --- | --- |
+| `github/01_github_actions_success.png` | A GitHub Actions success screenshot was not present in the attached Snapshots set. Capture the green Actions run from GitHub and save it with this name if the final report needs visual CI proof. |
+
