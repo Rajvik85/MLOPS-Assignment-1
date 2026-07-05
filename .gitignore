@@ -1,0 +1,20 @@
+# Local environments and package caches
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local operating system and editor files
+.DS_Store
+.idea/
+.vscode/
+
+# Runtime outputs that can be regenerated
+logs/
+*.log
+
+# Keep source data, model, plots, notebooks, MLflow sample runs, and reports
+# because they are useful grading evidence for this assignment.
