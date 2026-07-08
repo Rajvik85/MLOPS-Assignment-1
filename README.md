@@ -35,10 +35,12 @@ The project structure is split into modular components:
 │   └── test_preprocess.py    # Unit tests for preprocessing functions
 ├── Dockerfile                # Secure, multi-stage production Docker build
 ├── examples/                 # Sample JSON request payloads
-├── screenshots/              # Final submission screenshot checklist
+├── screenshots/              # API, MLflow, Docker, and Kubernetes evidence
 ├── requirements.txt          # Python package dependencies
-├── Report.md                 # Written assignment report source
-├── output/pdf/               # Final PDF report
+├── Report.md                 # Markdown version of the assignment report
+├── output/
+│   ├── MLOps_Assignment_01_Final_Report.docx
+│   └── pdf/MLOps_Assignment_01_Final_Report.pdf
 └── README.md                 # Project execution guide
 ```
 
