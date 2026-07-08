@@ -1,5 +1,5 @@
 # Stage 1: Build dependencies
-FROM python:3.10-slim AS builder
+FROM python:3.13-slim AS builder
 
 WORKDIR /app
 
@@ -14,7 +14,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir --user -r requirements.txt
 
 # Stage 2: Minimal runtime environment
-FROM python:3.10-slim AS runner
+FROM python:3.13-slim AS runner
 
 WORKDIR /app
 

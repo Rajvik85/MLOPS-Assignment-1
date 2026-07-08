@@ -15,9 +15,16 @@ __pycache__/
 # Runtime outputs that can be regenerated
 logs/
 *.log
+.coverage
 mlflow.db
 mlflow_screenshots.db
+mlruns/
 mlartifacts/
+models/test_model.joblib
+output/docx/
+output/docx_render*/
+output/infographics/
+scripts/generated/
 
-# Keep source data, model, plots, notebooks, MLflow sample runs, and reports
+# Keep source data, the serving model, plots, notebooks, screenshots, and reports
 # because they are useful grading evidence for this assignment.

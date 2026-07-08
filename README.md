@@ -37,8 +37,8 @@ The project structure is split into modular components:
 ├── examples/                 # Sample JSON request payloads
 ├── screenshots/              # Final submission screenshot checklist
 ├── requirements.txt          # Python package dependencies
-├── SUBMISSION_CHECKLIST.md   # Rubric and evidence checklist
-├── Study_Notes.md            # Detailed assignment study notes
+├── Report.md                 # Written assignment report source
+├── output/pdf/               # Final PDF report
 └── README.md                 # Project execution guide
 ```
 
@@ -95,17 +95,17 @@ You can also explore the dataset interactively using the Jupyter Notebook:
 Train, tune, compare Logistic Regression and Random Forest, and save the best model by ROC-AUC:
 
 ```bash
-python3 -m src.train --model both
+MLFLOW_ALLOW_FILE_STORE=true python3 -m src.train --model both
 ```
 
 You can also train one model at a time:
 
 ```bash
 # Train Logistic Regression
-python3 -m src.train --model lr
+MLFLOW_ALLOW_FILE_STORE=true python3 -m src.train --model lr
 
 # Train Random Forest
-python3 -m src.train --model rf
+MLFLOW_ALLOW_FILE_STORE=true python3 -m src.train --model rf
 ```
 The script will perform 5-fold cross-validation grid search to find the optimal hyperparameters, log accuracy, precision, recall, F1-score, ROC-AUC, Confusion Matrix, and ROC Curve plots directly to **MLflow**, and save the selected production pipeline locally to `models/best_model.joblib`.
 
@@ -236,7 +236,7 @@ For Minikube users, run `minikube service heart-disease-api-service` to retrieve
 
 ## 7. Final Submission Evidence
 
-Before final upload, follow `SUBMISSION_CHECKLIST.md` and add screenshots into `screenshots/`:
+Before final upload, review the report and add evidence screenshots into `screenshots/`:
 
 * MLflow experiment runs and artifacts.
 * GitHub Actions passing workflow.
