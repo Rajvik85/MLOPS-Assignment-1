@@ -233,15 +233,3 @@ kubectl get service heart-disease-api-service
 For Minikube users, run `minikube service heart-disease-api-service` to retrieve the external API endpoint url.
 
 ---
-
-## 7. Final Submission Evidence
-
-Before final upload, review the report and add evidence screenshots into `screenshots/`:
-
-* MLflow experiment runs and artifacts.
-* GitHub Actions passing workflow.
-* Docker image build and `/predict` response.
-* Kubernetes pods, service, and deployed endpoint response.
-* `/metrics` monitoring output.
-
-Also add your GitHub repository link to the final report and include the short pipeline video required by the assignment.
