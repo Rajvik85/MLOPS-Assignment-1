@@ -213,5 +213,3 @@ The code and configuration files implement the assignment requirements. The foll
 * Kubernetes pod/service screenshots and deployed endpoint test.
 * `/metrics` monitoring screenshot.
 * Short video recording of the pipeline workflow.
-
-The screenshot naming checklist is available in `screenshots/README.md`.
