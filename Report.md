@@ -202,14 +202,3 @@ We compile the container using a **multi-stage build** targeting `python:3.10-sl
 
 ---
 
-## 11. Final Submission Evidence To Attach
-
-The code and configuration files implement the assignment requirements. The following runtime evidence should be added before final submission:
-
-* GitHub repository URL.
-* MLflow screenshots showing both model runs, metrics, and artifacts.
-* GitHub Actions screenshot showing the CI pipeline passed.
-* Docker build/run screenshots and `/predict` response.
-* Kubernetes pod/service screenshots and deployed endpoint test.
-* `/metrics` monitoring screenshot.
-* Short video recording of the pipeline workflow.
