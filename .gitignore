@@ -11,8 +11,10 @@ __pycache__/
 .DS_Store
 .idea/
 .vscode/
+~$*.docx
 
 # Runtime outputs that can be regenerated
+tmp/
 logs/
 *.log
 .coverage

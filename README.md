@@ -1,237 +1,183 @@
-# Heart Disease Prediction MLOps Pipeline
+# Heart Disease Prediction MLOps Assignment
 
-This repository contains a production-grade, end-to-end Machine Learning Operations (MLOps) pipeline for predicting heart disease risk based on patient clinical health data. The pipeline uses the **UCI Heart Disease Cleveland Dataset** and demonstrates best practices in data engineering, model development, experiment tracking, API containerization, Kubernetes orchestration, CI/CD, and monitoring.
+This is my end-to-end MLOps assignment for predicting heart disease risk using the UCI Cleveland Heart Disease dataset.
 
-**GitHub username**: `Rajvik85`  
-**Recommended repository URL**: `https://github.com/Rajvik85/MLOPS-Assignment-1`
+In this project, I show the full workflow: downloading data, cleaning and preprocessing it, generating EDA plots, training models, tracking experiments in MLflow, serving the best model through FastAPI, packaging it with Docker, checking it through GitHub Actions, and preparing Kubernetes deployment files.
 
----
+Repository link: `https://github.com/Rajvik85/MLOPS-Assignment-1`
 
-## 1. Architectural Overview
+## Project Flow
 
-The project structure is split into modular components:
+I explain the project in this order:
+
+1. Download the raw dataset from UCI.
+2. Clean the data and prepare preprocessing steps.
+3. Generate EDA plots for understanding the dataset.
+4. Train Logistic Regression and Random Forest models.
+5. Track metrics, plots, and model artifacts in MLflow.
+6. Save the best model as `models/best_model.joblib`.
+7. Serve predictions using a FastAPI API and browser UI.
+8. Run tests and quality checks.
+9. Build and run the Docker image.
+10. Show CI/CD through GitHub Actions.
+11. Show deployment files for Kubernetes.
+
+## Main Files
 
 ```text
-├── .github/workflows/
-│   └── mlops_ci.yaml         # GitHub Actions CI workflow
-├── data/
-│   ├── raw/                  # Downloaded raw dataset from UCI Repository
-├── kubernetes/
-│   ├── deployment.yaml       # K8s Deployment configurations (scaling, probes)
-│   └── service.yaml          # K8s Service configuration (LoadBalancer)
-├── notebooks/
-│   ├── 01_eda.ipynb          # Exploratory Data Analysis with visualizations
-│   └── 02_model_training.ipynb # Model training run demo and selection
-├── src/
-│   ├── __init__.py
-│   ├── api.py                # FastAPI serving code with Prometheus metrics
-│   ├── download_data.py      # Automated dataset downloader
-│   ├── eda.py                # Reproducible EDA plot generator
-│   ├── preprocess.py         # Sklearn preprocessing Pipeline
-│   └── train.py              # MLflow integrated grid-tuning & training script
-├── tests/
-│   ├── __init__.py
-│   ├── test_api.py           # Endpoint integration tests (Mocked models)
-│   └── test_preprocess.py    # Unit tests for preprocessing functions
-├── Dockerfile                # Secure, multi-stage production Docker build
-├── examples/                 # Sample JSON request payloads
-├── screenshots/              # API, MLflow, Docker, and Kubernetes evidence
-├── requirements.txt          # Python package dependencies
-├── Report.md                 # Markdown version of the assignment report
-├── output/
-│   ├── MLOps_Assignment_01_Final_Report.docx
-│   └── pdf/MLOps_Assignment_01_Final_Report.pdf
-└── README.md                 # Project execution guide
+src/download_data.py     Downloads the UCI dataset
+src/preprocess.py        Cleans data and builds preprocessing pipeline
+src/eda.py               Creates EDA plots
+src/train.py             Trains models and logs MLflow experiments
+src/api.py               Serves the trained model using FastAPI
+tests/                   Unit tests for preprocessing, EDA, training, and API
+Dockerfile               Docker image definition for the API
+.github/workflows/       GitHub Actions CI pipeline
+kubernetes/              Deployment and service YAML files
+examples/                Sample prediction request JSON
+screenshots/             Proof screenshots for report
+output/                  Final report files
 ```
 
----
+## Setup
 
-## 2. Installation & Setup
-
-Ensure you have **Python 3.10+**, **Docker**, and a local Kubernetes cluster (like **Minikube** or **Docker Desktop Kubernetes**) installed.
-
-### Virtual Environment Configuration
-Initialize a Python virtual environment and install the required dependencies:
+I use a clean Python environment and install everything from `requirements.txt`.
 
 ```bash
-# Create virtual environment
 python3 -m venv venv
-
-# Activate virtual environment
 source venv/bin/activate
-
-# Install dependencies
-pip install --upgrade pip
+python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
----
+## Run The Pipeline
 
-## 3. Execution Guide
-
-### Step 3.1: Data Ingestion
-Download the Heart Disease dataset directly from the UCI Repository:
+Download the dataset:
 
 ```bash
-python3 src/download_data.py
+python src/download_data.py
 ```
-This saves the raw file to `data/raw/processed.cleveland.data`.
 
-### Step 3.2: Exploratory Data Analysis (EDA)
-Generate all required EDA plots for the report:
+Generate EDA plots:
 
 ```bash
-python3 -m src.eda
+python -m src.eda --data data/raw/processed.cleveland.data --output-dir plots
 ```
 
-This creates class balance, missing value, histogram, correlation heatmap, and feature relationship plots under `plots/`.
-
-You can also explore the dataset interactively using the Jupyter Notebook:
-* Location: `notebooks/01_eda.ipynb`
-* To run:
-  ```bash
-  jupyter notebook notebooks/01_eda.ipynb
-  ```
-
-### Step 3.3: Model Training & Tuning (with MLflow Tracking)
-Train, tune, compare Logistic Regression and Random Forest, and save the best model by ROC-AUC:
+Train both models and save the best one:
 
 ```bash
-MLFLOW_ALLOW_FILE_STORE=true python3 -m src.train --model both
+MLFLOW_ALLOW_FILE_STORE=true python -m src.train --model both --save-path models/best_model.joblib
 ```
 
-You can also train one model at a time:
+Open MLflow:
 
 ```bash
-# Train Logistic Regression
-MLFLOW_ALLOW_FILE_STORE=true python3 -m src.train --model lr
-
-# Train Random Forest
-MLFLOW_ALLOW_FILE_STORE=true python3 -m src.train --model rf
+MLFLOW_ALLOW_FILE_STORE=true mlflow ui --host 127.0.0.1 --port 5001
 ```
-The script will perform 5-fold cross-validation grid search to find the optimal hyperparameters, log accuracy, precision, recall, F1-score, ROC-AUC, Confusion Matrix, and ROC Curve plots directly to **MLflow**, and save the selected production pipeline locally to `models/best_model.joblib`.
 
-### Step 3.4: Visualizing Experiments in MLflow Dashboard
-To launch the local MLflow dashboard and review metrics and logged curves, execute:
+Then open:
+
+```text
+http://127.0.0.1:5001
+```
+
+## Run Tests
+
+I use these commands to check formatting, linting, tests, and coverage:
+
 ```bash
-mlflow ui
+black --check src/ tests/
+flake8 src/ tests/ --count --select=E9,F63,F7,F82 --show-source --statistics
+flake8 src/ tests/ --count --max-line-length=127 --statistics
+python -m pytest tests/ --cov=src --cov-report=term-missing
 ```
-Navigate to **[http://127.0.0.1:5000](http://127.0.0.1:5000)** in your web browser.
 
----
+## Run The API Locally
 
-## 4. Serving Predictions via API
+Start the FastAPI app:
 
-We serve the best model pipeline via a production-grade **FastAPI** web application.
-
-### Start the Local API Server
-Start Uvicorn to run the server:
 ```bash
-uvicorn src.api:app --reload --host 127.0.0.1 --port 8000
+uvicorn src.api:app --host 127.0.0.1 --port 8000
 ```
 
-### Use the Browser Prediction UI
-Open the user-facing prediction form in your browser:
+Open the browser UI:
 
 ```bash
 open http://127.0.0.1:8000
 ```
 
-The page lets a user enter patient health values and calls the same `/predict`
-API endpoint used by automated systems. It displays the prediction, confidence,
-and model version directly in the browser. The form loads a random realistic
-sample patient record each time the page opens, and the **Load Random Sample**
-button can be used to load another random record before prediction. The loaded
-sample record is displayed on the page as JSON so users can see exactly which
-values are being sent to the model.
-
-You can also inspect the automatically generated API documentation:
+Open Swagger docs:
 
 ```bash
 open http://127.0.0.1:8000/docs
 ```
 
-### Validate API Endpoints
-1. **Health Check**:
-   ```bash
-   curl -X GET http://127.0.0.1:8000/health
-   ```
-2. **Prometheus Metrics**:
-   ```bash
-   curl -X GET http://127.0.0.1:8000/metrics
-   ```
-3. **Model Prediction**:
-   Submit clinical features for inference using `curl`:
-   ```bash
-   curl -X POST "http://127.0.0.1:8000/predict" \
-        -H "Content-Type: application/json" \
-        --data @examples/patient_request.json
-   ```
-   **Expected Response**:
-   ```json
-   {
-     "prediction": 0,
-     "confidence": 0.178,
-     "model_version": "1.0.0"
-   }
-   ```
-
----
-
-## 5. Automated Testing & Code Quality
-
-Verify the codebase integrity by running lint checks and automated unit tests.
-
-### Code Formatting and Linting
-We enforce standard PEP-8 rules using `black` (formatter) and `flake8` (linter):
+Test from terminal:
 
 ```bash
-# Check formatting
-black --check src/ tests/
-
-# Check styling and syntax
-flake8 src/ tests/ --ignore=E501
+curl http://127.0.0.1:8000/health
+curl -X POST http://127.0.0.1:8000/predict \
+  -H "Content-Type: application/json" \
+  -d @examples/patient_request.json
+curl http://127.0.0.1:8000/metrics | head
 ```
 
-### Run Unit & Integration Tests
-Execute the unit tests covering the preprocessing modules and the FastAPI routing endpoints (using mock classes to isolate endpoints):
+## Docker
+
+Build the image:
 
 ```bash
-python3 -m pytest tests/ --cov=src -v
+docker build -t heart-disease-api:check .
 ```
 
----
-
-## 6. Containerization & Kubernetes Orchestration
-
-### Build Docker Image
-To package the API with its dependencies, models, and preprocessors:
+Run the container:
 
 ```bash
-docker build -t heart-disease-api:latest -t heart-disease-api:1.0.1 .
+docker rm -f heart-disease-api-check 2>/dev/null || true
+docker run -d --name heart-disease-api-check -p 8766:8000 heart-disease-api:check
 ```
 
-### Run Docker Container Locally
+Test the container:
+
 ```bash
-docker run -p 8000:8000 heart-disease-api:latest
+curl http://127.0.0.1:8766/health
+curl -X POST http://127.0.0.1:8766/predict \
+  -H "Content-Type: application/json" \
+  -d @examples/patient_request.json
 ```
-Open `http://127.0.0.1:8000` to use the browser UI, or test the container
-endpoint using the same `curl` commands.
 
-### Kubernetes Deployment
-Deploy the containerized application to your local Kubernetes cluster (Minikube / Docker Desktop):
+## Kubernetes
+
+The Kubernetes files are in the `kubernetes/` folder.
 
 ```bash
-# Apply deployment config
 kubectl apply -f kubernetes/deployment.yaml
-
-# Apply service config (LoadBalancer)
 kubectl apply -f kubernetes/service.yaml
-
-# Check status of pods and service
-kubectl get pods
-kubectl get service heart-disease-api-service
+kubectl get pods -l app=heart-disease-api
+kubectl get svc heart-disease-api-service
 ```
-For Minikube users, run `minikube service heart-disease-api-service` to retrieve the external API endpoint url.
 
----
+For local testing, I use port forwarding:
+
+```bash
+kubectl port-forward service/heart-disease-api-service 8080:80
+```
+
+Then test:
+
+```bash
+curl http://127.0.0.1:8080/health
+```
+
+## Report And Evidence
+
+My final report and proof screenshots are stored here:
+
+```text
+output/MLOps_Assignment_01_Final_Report.docx
+output/pdf/MLOps_Assignment_01_Final_Report.pdf
+screenshots/
+```
+
+The report includes setup instructions, EDA and modelling choices, MLflow tracking summary, architecture diagram, CI/CD proof, deployment proof, and repository link.
